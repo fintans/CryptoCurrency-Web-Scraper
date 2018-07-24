@@ -40,24 +40,28 @@ public class RunScraperNew {
             @Override
             public void run() {
                 try {
+                    List<String> apiList = getCoinData.getAllCoins();
+                    List<Coin> coinList = getCoinData.coinDataList(apiList);
+
                     List<ScrapedContent> redditContent = redditScraper.scrape();
                     List<ScrapedContent> newsContent = newsScraper.scrape();
-                    
-                    List<Coin> coinList = getCoinData.coinDataList();
-                    
+
+//                    db.createCoinTable();
+//                    db.createScrapeTable();
                     for (Coin coin : coinList) {
-                        
+
                         try {
-                mentionsCount.counter(redditContent, coin);
-                mentionsCount.counter(newsContent, coin);
+                            mentionsCount.counter(redditContent, coin);
+                            //mentionsCount.counterNews(newsContent, coin);
 
-//                mentionsCount.tone(redditContent, coin);
-//                mentionsCount.tone(newsContent, coin);
-                db.insertNewScrapeInfoOften(coin);
+                            //  mentionsCount.tone(redditContent, coin);
+                            // mentionsCount.tone(newsContent, coin);
+                            //db.insertNewCoin(coin);
+                            db.insertNewScrapeInfoOften(coin);
 
-            } catch (org.json.JSONException e) {
-            }
-                        
+                        } catch (org.json.JSONException e) {
+                        }
+
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(RunScraperNew.class.getName()).log(Level.SEVERE, null, ex);
@@ -69,7 +73,8 @@ public class RunScraperNew {
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(helloRunnable, 0, 10, TimeUnit.MINUTES);
-
+    }
+}
 //        List<ScrapedContent> redditContent = redditScraper.scrape();
 //        List<ScrapedContent> newsContent = newsScraper.scrape();
 //
@@ -108,6 +113,3 @@ public class RunScraperNew {
 //        System.out.println("analyitcal " + coin1.getAnalytical());
 //        System.out.println("tentative " + coin1.getTentative());
 
-    }
-
-}

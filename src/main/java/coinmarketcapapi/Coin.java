@@ -3,21 +3,23 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/*
+ /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package coinmarketcapapi;
 
+import java.util.List;
+import scrape.ScrapedContent;
+
 /**
  *
  * @author fintan
  */
-
 //used to created 100 coin objects from coinmarketcap API
 public class Coin {
-    
+
     private int id;
     private String name;
     private String symbol;
@@ -27,6 +29,13 @@ public class Coin {
     private double marketCap;
     private double percentChange; //24hr
     private int mentions;
+    private int fear;
+    private int sadness;
+    private int anger;
+    private int tentative;
+    private int analytical;
+    private int confident;
+    private int joy;
     private int newsMentions;
 
     public int getNewsMentions() {
@@ -36,6 +45,73 @@ public class Coin {
     public void setNewsMentions(int newsMentions) {
         this.newsMentions = newsMentions;
     }
+    
+    
+
+    public int getFear() {
+        return fear;
+    }
+
+    public void setFear(int fear) {
+        this.fear = fear;
+    }
+
+    public int getSadness() {
+        return sadness;
+    }
+
+    public void setSadness(int sadness) {
+        this.sadness = sadness;
+    }
+
+    public int getAnger() {
+        return anger;
+    }
+
+    public void setAnger(int anger) {
+        this.anger = anger;
+    }
+
+    public int getTentative() {
+        return tentative;
+    }
+
+    public void setTentative(int tentative) {
+        this.tentative = tentative;
+    }
+
+    public int getAnalytical() {
+        return analytical;
+    }
+
+    public void setAnalytical(int analytical) {
+        this.analytical = analytical;
+    }
+
+    public int getConfident() {
+        return confident;
+    }
+
+    public void setConfident(int confident) {
+        this.confident = confident;
+    }
+
+    public int getJoy() {
+        return joy;
+    }
+
+    public void setJoy(int joy) {
+        this.joy = joy;
+    }
+    
+    
+    
+
+    public Coin(String name, String symbol) {
+        this.name = name;
+        this.symbol = symbol;
+    }
+    
 
     public Coin(int mentions) {
         this.mentions = mentions;
@@ -91,8 +167,6 @@ public class Coin {
     public void setPercentChange(double percentChange) {
         this.percentChange = percentChange;
     }
-    
-    
 
     public void setAllCoins(int id, String name, String symbol) {
         this.id = id;
@@ -111,14 +185,9 @@ public class Coin {
         this.percentChange = percentChange;
     }
 
-
-    
-    
-
     public Coin(String name) {
         this.name = name;
     }
-    
 
     public int getId() {
         return id;
@@ -143,9 +212,5 @@ public class Coin {
     public void setSymbol(String symbol) {
         this.symbol = symbol;
     }
-    
-    
-    
-    
-    
+
 }

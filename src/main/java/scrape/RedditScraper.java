@@ -53,44 +53,32 @@ public final class RedditScraper {
    
     
 
-    public List<ScrapedContent> comments() {
+    public List<ScrapedContent> scrape() {
         
         //OAuth2 credentials
         Credentials credentials = Credentials.script("scrapeProject", "webscrape123", "FJ1B8R9NFJqMwQ", "DVYhmabSLuv38mzJs4FxfFmOFq4");
-
         UUID uuid = UUID.randomUUID();
-        // Construct our NetworkAdapter
-        
+        // Construct our NetworkAdapter      
         UserAgent userAgent = new UserAgent("bot", "net.dean.jraw.example.script", Version.get(), "scrapeProject");
         NetworkAdapter http = new OkHttpNetworkAdapter(userAgent);
-
         // Authenticate our client
         RedditClient reddit = OAuthHelper.automatic(http, credentials);
-
         // Browse through the top posts of the last month, requesting as much data as possible per request
         DefaultPaginator.Builder<Submission, SubredditSort> crypto = reddit.subreddit("CryptoCurrency").posts();
-
         // Request the first page
         DefaultPaginator<Submission> list = crypto.build();
-
         Listing<Submission> firstPage = list.next();
-
         ArrayList<String> postBaseName = new ArrayList<>();
-
+        
         //gets the base 36 code for each post
         for (Submission post : firstPage) {
-
             postBaseName.add(post.getId());
-
         }
 
-        System.out.println(postBaseName);
-
-        List<Integer> mentions = new ArrayList<>();
+        System.out.println(postBaseName);     
         List<ScrapedContent> comments = new ArrayList<>();
         //for every post on the first page, get each posts comments
         for (String post : postBaseName) {
-
             RootCommentNode root = reddit.submission(post).comments();  // "7uahka"
 
 // walkTree() returns a Kotlin Sequence. Since we're using Java, we're going to have to
@@ -102,10 +90,7 @@ public final class RedditScraper {
                 PublicContribution<?> thing = it.next().getSubject();
                 ScrapedContent comment = new ScrapedContent(thing.getCreated(), thing.getBody());
                 comments.add(comment);
-                
-
             }
-
         }
         return comments;
     }
@@ -114,15 +99,13 @@ public final class RedditScraper {
     public static void main(String[] args) {
         MentionsCount mentionsCounter = new MentionsCount();
         RedditScraper search = new RedditScraper();
-        List<ScrapedContent> allComments = search.comments();
-        List<Coin> listMentions = mentionsCounter.mentions(allComments);
+        List<ScrapedContent> allComments = search.scrape();
         
-        
-       
-        
-        for (Coin coin : listMentions) {
-            System.out.println(coin.getName() + coin.getMentions());
+        for (ScrapedContent content : allComments) {
+            System.out.println(content.getDate());
+            // Wed Jun 27 20:42:11 BST 2018
         }
+
 
         
 

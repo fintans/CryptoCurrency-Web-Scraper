@@ -6,8 +6,12 @@
 package scrape;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,16 +24,15 @@ import org.jsoup.select.Elements;
  */
 //scrapes articles from crypto news website
 public class NewsScraper {
-    
+
     //returns a list of links for each article on the site
-    public List<Document> links() throws IOException {
+    public List<ScrapedContent> scrape() throws IOException, ParseException {
 
         Document document = Jsoup.connect("https://cryptonews.com/news/").get();
         List<Document> articleLink = new ArrayList<>();
-        for (Element article : document.select("div#newsContainer.list")) {
+        for (Element article : document.select("div#newsContainer")) {
 
             Elements links = article.getElementsByTag("a");
-
             for (Element link : links) {
                 String linkHref = link.attr("abs:href");
                 Document document1 = Jsoup.connect(linkHref).get();
@@ -37,34 +40,58 @@ public class NewsScraper {
                 String linkText = link.text();
                 System.out.println(linkHref);
             }
-
+            
+            List<ScrapedContent> articleContent = new ArrayList<>();          
+            for (Document document2 : articleLink) {
+                
+                String content = document2.select("div.cn-content").html();    
+            //access time within time div
+            String dateStr = document2.select("time").attr("datetime");
+            //reformat date to create date object
+            SimpleDateFormat formatterTest = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            Date dateTest = formatterTest.parse(dateStr);
+            //create new ScrapedContent object
+            ScrapedContent scrapedContent = new ScrapedContent(dateTest, content);
+            articleContent.add(scrapedContent);
+//            System.out.println("CONTENT: " + scrapedContent.getComment());
+//            System.out.println("DATE : " + scrapedContent.getDate());              
+            }
+            return articleContent;
         }
-        return articleLink;
-
+        return null;
     }
 
-    //searchs each link to get the article, each article is stored in a list of strings
-    public List<String> articles(List<Document> articleLink) {
+    public void tester(List<Document> articleLink) throws ParseException {
         List<String> articleContent = new ArrayList<>();
 
         for (Document document1 : articleLink) {
-            String content = document1.select("div.cn-content").html();
-            articleContent.add(content);
+            //String dateStr = document1.select("time").html();
+
+            String dateStr = document1.select("time").attr("datetime");
+
+            System.out.println(dateStr);
+            SimpleDateFormat formatterTest = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+            Date dateTest = formatterTest.parse(dateStr);
+            System.out.println(dateTest);
         }
 
-        for (String string : articleContent) {
-            System.out.println("HERE" + string);
-        }
-        return articleContent;
     }
 
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseException {
         RedditScraper search = new RedditScraper();
         NewsScraper scraper = new NewsScraper();
-        List<Document> links = scraper.links();
-        List<String> articles = scraper.articles(links);
+        List<ScrapedContent> hi = scraper.scrape();
+        System.out.println("SIZE" + hi.size());
+        for (ScrapedContent scrapedContent : hi) {
+            System.out.println(scrapedContent);
+        }
         
+        
+        
+//        List<Document> links = scraper.links();
+////        List<String> articles = scraper.articles(links);
+//        scraper.articles(links);
 
     }
 

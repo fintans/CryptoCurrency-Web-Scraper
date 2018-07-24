@@ -24,7 +24,7 @@ import org.json.JSONObject;
  *
  * @author fintan
  */
-public class DBNew {
+public class DBAgain {
 
     RedditScraper search = new RedditScraper();
     MentionsCount mentionsCounter = new MentionsCount();
@@ -32,7 +32,7 @@ public class DBNew {
     public JSONArray getCoinData(String coinName) throws SQLException, ClassNotFoundException {
 
         Class.forName("org.sqlite.JDBC");
-        Connection c = DriverManager.getConnection("jdbc:sqlite:new.db");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
         Statement stmt = c.createStatement();
         // ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO where NAME = " + "'" + coinName + "'" + ";");
         ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO INNER JOIN COININFO ON SCRAPEINFO.ID=COININFO.ID WHERE name = " + "'" + coinName + "'" + ";");
@@ -51,10 +51,32 @@ public class DBNew {
         return json;
     }
 
+    public JSONArray getCoinTone(String coinName) throws SQLException, ClassNotFoundException {
+
+        Class.forName("org.sqlite.JDBC");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
+        Statement stmt = c.createStatement();
+        // ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO where NAME = " + "'" + coinName + "'" + ";");
+        ResultSet rs = stmt.executeQuery("SELECT * FROM TONEINFO INNER JOIN COININFO ON TONEINFO.ID=COININFO.ID WHERE name = " + "'" + coinName + "'" + ";");
+
+        JSONArray json = new JSONArray();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        while (rs.next()) {
+            int numColumns = rsmd.getColumnCount();
+            JSONObject obj = new JSONObject();
+            for (int i = 1; i <= numColumns; i++) {
+                String column_name = rsmd.getColumnName(i);
+                obj.put(column_name, rs.getObject(column_name));
+            }
+            json.put(obj);
+        }
+        return json;
+    }
+
     public JSONArray get24Hr(String coinName) throws SQLException, ClassNotFoundException {
 
         Class.forName("org.sqlite.JDBC");
-        Connection c = DriverManager.getConnection("jdbc:sqlite:new.db");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
         Statement stmt = c.createStatement();
         // ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO where NAME = " + "'" + coinName + "'" + ";");
         ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO INNER JOIN COININFO"
@@ -78,12 +100,141 @@ public class DBNew {
     public JSONArray getHour(String coinName) throws SQLException, ClassNotFoundException {
 
         Class.forName("org.sqlite.JDBC");
-        Connection c = DriverManager.getConnection("jdbc:sqlite:new.db");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
         Statement stmt = c.createStatement();
         // ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO where NAME = " + "'" + coinName + "'" + ";");
         ResultSet rs = stmt.executeQuery("SELECT Price, AVG(mentions) AS AVGMENTIONS, AVG(newsmentions) AS AVGNEWSMENTIONS, strftime ('%H',timestamp) hour"
                 + " FROM SCRAPEINFO INNER JOIN COININFO ON SCRAPEINFO.ID=COININFO.ID"
                 + " WHERE name = " + "'" + coinName + "'" + "GROUP BY strftime ('%H',timestamp)" + ";");
+
+        JSONArray json = new JSONArray();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        while (rs.next()) {
+            int numColumns = rsmd.getColumnCount();
+            JSONObject obj = new JSONObject();
+            for (int i = 1; i <= numColumns; i++) {
+                String column_name = rsmd.getColumnName(i);
+                obj.put(column_name, rs.getObject(column_name));
+            }
+            json.put(obj);
+        }
+        return json;
+    }
+
+    public JSONArray getDaily(String coinName) throws SQLException, ClassNotFoundException {
+
+        Class.forName("org.sqlite.JDBC");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
+        Statement stmt = c.createStatement();
+        // ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO where NAME = " + "'" + coinName + "'" + ";");
+        ResultSet rs = stmt.executeQuery("SELECT avg(Price) AS AVGPRICE, AVG(mentions) AS AVGMENTIONS, AVG(newsmentions) AS AVGNEWSMENTIONS, strftime ('%d',timestamp) DAY\n"
+                + "FROM SCRAPEINFO INNER JOIN COININFO ON SCRAPEINFO.ID=COININFO.ID WHERE name = " + "'" + coinName + "'" + "\n"
+                + "GROUP BY strftime ('%d',timestamp)" + ";");
+
+        JSONArray json = new JSONArray();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        while (rs.next()) {
+            int numColumns = rsmd.getColumnCount();
+            JSONObject obj = new JSONObject();
+            for (int i = 1; i <= numColumns; i++) {
+                String column_name = rsmd.getColumnName(i);
+                obj.put(column_name, rs.getObject(column_name));
+            }
+            json.put(obj);
+        }
+        return json;
+    }
+
+    public JSONArray getMaxMentionsAllCoins(String coinName) throws SQLException, ClassNotFoundException {
+
+        Class.forName("org.sqlite.JDBC");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
+        Statement stmt = c.createStatement();
+        // ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO where NAME = " + "'" + coinName + "'" + ";");
+        ResultSet rs = stmt.executeQuery("SELECT MAX(mentions) as MAXMENTIONS, name, rank\n"
+                + "From COININFO INNER JOIN SCRAPEINFO ON COININFO.ID=SCRAPEINFO.ID\n"
+                + "WHERE timestamp >= datetime('now','-1 day')\n"
+                + "group by COININFO.id\n"
+                + "order by MAXMENTIONS DESC" + ";");
+
+        JSONArray json = new JSONArray();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        while (rs.next()) {
+            int numColumns = rsmd.getColumnCount();
+            JSONObject obj = new JSONObject();
+            for (int i = 1; i <= numColumns; i++) {
+                String column_name = rsmd.getColumnName(i);
+                obj.put(column_name, rs.getObject(column_name));
+            }
+            json.put(obj);
+        }
+        return json;
+    }
+
+    public JSONArray get50CoinsUnder1() throws SQLException, ClassNotFoundException {
+
+        Class.forName("org.sqlite.JDBC");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
+        Statement stmt = c.createStatement();
+        // ResultSet rs = stmt.executeQuery("SELECT * FROM SCRAPEINFO where NAME = " + "'" + coinName + "'" + ";");
+        ResultSet rs = stmt.executeQuery("SELECT AVG(mentions) as AVGMENTIONS, AVG(newsmentions) as AVGNEWSMENTIONS, AVG(PRICE) as AVGPRICE, name, price\n"
+                + "From COININFO INNER JOIN SCRAPEINFO ON COININFO.ID=SCRAPEINFO.ID\n"
+                + "where price < 1 and mentions > 1\n"
+                + "group by COININFO.id\n"
+                + "order by AVGMENTIONS DESC\n"
+                + "limit 50" + ";");
+
+        JSONArray json = new JSONArray();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        while (rs.next()) {
+            int numColumns = rsmd.getColumnCount();
+            JSONObject obj = new JSONObject();
+            for (int i = 1; i <= numColumns; i++) {
+                String column_name = rsmd.getColumnName(i);
+                obj.put(column_name, rs.getObject(column_name));
+            }
+            json.put(obj);
+        }
+        return json;
+    }
+
+    public JSONArray getAvgMentions1Week() throws SQLException, ClassNotFoundException {
+
+        Class.forName("org.sqlite.JDBC");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
+        Statement stmt = c.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT AVG(mentions) as AVGMENTIONS, AVG(newsmentions) as AVGNEWSMENTIONS, AVG(PRICE) as AVGPRICE, name\n"
+                + "From COININFO INNER JOIN SCRAPEINFO ON COININFO.ID=SCRAPEINFO.ID\n"
+                + "WHERE timestamp >= datetime('now','-7 day')\n"
+                + "group by COININFO.id\n"
+                + "order by AVGMENTIONS DESC\n"
+                + "LIMIT 20" + ";");
+
+        JSONArray json = new JSONArray();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        while (rs.next()) {
+            int numColumns = rsmd.getColumnCount();
+            JSONObject obj = new JSONObject();
+            for (int i = 1; i <= numColumns; i++) {
+                String column_name = rsmd.getColumnName(i);
+                obj.put(column_name, rs.getObject(column_name));
+            }
+            json.put(obj);
+        }
+        return json;
+    }
+
+    //max mention for all coins - for bubble chart
+    public JSONArray getMaxMentionsAll() throws SQLException, ClassNotFoundException {
+
+        Class.forName("org.sqlite.JDBC");
+        Connection c = DriverManager.getConnection("jdbc:sqlite:tone.db");
+        Statement stmt = c.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT AVG(mentions) as MAXMENTIONS, name, rank, price\n"
+                + "From COININFO INNER JOIN SCRAPEINFO ON COININFO.ID=SCRAPEINFO.ID\n"
+                + "WHERE NOT name = 'Bitcoin'"
+                + "group by COININFO.id\n"
+                + "order by MAXMENTIONS DESC" + ";");
 
         JSONArray json = new JSONArray();
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -162,26 +313,18 @@ public class DBNew {
     }
 
     //updates db
-    public void updateTable(Coin coin) {
+    public void updateTone(Coin coin) {
 
         Connection c = null;
         Statement stmt = null;
 
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:test.db");
+            c = DriverManager.getConnection("jdbc:sqlite:tone.db");
             c.setAutoCommit(false);
             System.out.println("Opened database successfully");
 
             int id = coin.getId();
-            String name = coin.getName();
-            String symbol = coin.getSymbol();
-            int rank = coin.getRank();
-            double price = coin.getPrice();
-            double volume = coin.getVolume();
-            double marketcap = coin.getMarketCap();
-            double percentChange = coin.getPercentChange();
-            int mentions = coin.getMentions();
             int fear = coin.getFear();
             int sadness = coin.getSadness();
             int anger = coin.getAnger();
@@ -193,13 +336,9 @@ public class DBNew {
 
             stmt = c.createStatement();
             //update all coins, done by ID
-            String sql = "UPDATE COININFO set NAME = '" + name + "' ," + "SYMBOL = '" + symbol
-                    + "' ," + "RANK = " + rank + " ," + "PRICE = " + price + " ,"
-                    + "VOLUME = " + volume + ", MARKETCAP = " + marketcap + " ,"
-                    + "PERCENTCHANGE = " + percentChange + " ," + "MENTIONS = " + mentions + " ," + "FEAR = " + fear
+            String sql = "UPDATE TONEINFO set FEAR = " + fear
                     + ", sadness = " + sadness + " ," + "anger = " + anger + " ," + "tentative = " + tentative
                     + ", analytical = " + analytical + " ," + "confident = " + confident + " ," + "joy = " + joy
-                    + " newsmentions = " + newsMentions
                     + " where ID = " + id;
 
             stmt.executeUpdate(sql);
@@ -219,7 +358,7 @@ public class DBNew {
         Statement stmt = null;
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:new.db");
+            c = DriverManager.getConnection("jdbc:sqlite:tone.db");
             System.out.println("Opened database successfully");
 
             stmt = c.createStatement();
@@ -243,7 +382,7 @@ public class DBNew {
         Statement stmt = null;
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:new.db");
+            c = DriverManager.getConnection("jdbc:sqlite:tone.db");
             System.out.println("Opened database successfully");
 
             stmt = c.createStatement();
@@ -255,6 +394,31 @@ public class DBNew {
                     + " MARKETCAP      INT, "
                     + " PERCENTCHANGE  INT, "
                     + " MENTIONS       INT, "
+                    + " TIMESTAMP      INT, "
+                    + " NEWSMENTIONS   INT, "
+                    + " FOREIGN KEY(ID) REFERENCES COININFO(ID) ) ";
+
+            stmt.executeUpdate(sql);
+            stmt.close();
+            c.close();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+        System.out.println("Table created successfully");
+    }
+
+    public void createToneTable() {
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite:tone.db");
+            System.out.println("Opened database successfully");
+
+            stmt = c.createStatement();
+            String sql = "CREATE TABLE IF NOT EXISTS TONEINFO "
+                    + "(ID INT     NOT NULL,"
                     + " FEAR           INT, "
                     + " SADNESS        INT, "
                     + " ANGER          INT, "
@@ -263,7 +427,6 @@ public class DBNew {
                     + " CONFIDENT      INT, "
                     + " JOY            INT, "
                     + " TIMESTAMP      INT, "
-                    + " NEWSMENTIONS   INT, "
                     + " FOREIGN KEY(ID) REFERENCES COININFO(ID) ) ";
 
             stmt.executeUpdate(sql);
@@ -283,7 +446,7 @@ public class DBNew {
 
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:new.db");
+            c = DriverManager.getConnection("jdbc:sqlite:tone.db");
             c.setAutoCommit(false);
             System.out.println("Opened database successfully");
 
@@ -314,7 +477,7 @@ public class DBNew {
 
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:new.db");
+            c = DriverManager.getConnection("jdbc:sqlite:tone.db");
             c.setAutoCommit(false);
             System.out.println("Opened database successfully");
 
@@ -325,18 +488,12 @@ public class DBNew {
             double marketcap = coin.getMarketCap();
             double percentChange = coin.getPercentChange();
             int mentions = coin.getMentions();
-            int fear = coin.getFear();
-            int sadness = coin.getSadness();
-            int anger = coin.getAnger();
-            int tentative = coin.getTentative();
-            int analytical = coin.getAnalytical();
-            int confident = coin.getConfident();
-            int joy = coin.getJoy();
+            int newsMentions = coin.getNewsMentions();
 
             stmt = c.createStatement();
 
-            String sql = "INSERT INTO SCRAPEINFO (ID,RANK,PRICE,VOLUME,MARKETCAP,PERCENTCHANGE,MENTIONS,FEAR,SADNESS,ANGER,TENTATIVE,ANALYTICAL,CONFIDENT,JOY,TIMESTAMP) "
-                    + "VALUES (" + id + "," + rank + "," + price + "," + volume + "," + marketcap + "," + percentChange + "," + mentions + "," + fear + "," + sadness + "," + anger + "," + tentative + "," + analytical + "," + confident + "," + joy + "," + "(CURRENT_TIMESTAMP)" + ");";
+            String sql = "INSERT INTO SCRAPEINFO (ID,RANK,PRICE,VOLUME,MARKETCAP,PERCENTCHANGE,MENTIONS,TIMESTAMP,NEWSMENTIONS) "
+                    + "VALUES (" + id + "," + rank + "," + price + "," + volume + "," + marketcap + "," + percentChange + "," + mentions + "," + "(CURRENT_TIMESTAMP)" + "," + newsMentions + ");";
             stmt.executeUpdate(sql);
 
             stmt.close();
@@ -349,24 +506,18 @@ public class DBNew {
         System.out.println("Records created successfully");
     }
 
-    public void insertNewScrapeInfoOften(Coin coin) {
+    public void insertNewToneInfo(Coin coin) {
 
         Connection c = null;
         Statement stmt = null;
 
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:new.db");
+            c = DriverManager.getConnection("jdbc:sqlite:tone.db");
             c.setAutoCommit(false);
             System.out.println("Opened database successfully");
 
             int id = coin.getId();
-            int rank = coin.getRank();
-            double price = coin.getPrice();
-            double volume = coin.getVolume();
-            double marketcap = coin.getMarketCap();
-            double percentChange = coin.getPercentChange();
-            int mentions = coin.getMentions();
             int fear = coin.getFear();
             int sadness = coin.getSadness();
             int anger = coin.getAnger();
@@ -374,15 +525,13 @@ public class DBNew {
             int analytical = coin.getAnalytical();
             int confident = coin.getConfident();
             int joy = coin.getJoy();
-            int newsMentions = coin.getNewsMentions();
 
             stmt = c.createStatement();
 
-            String sql = "INSERT INTO SCRAPEINFO (ID,RANK,PRICE,VOLUME,MARKETCAP,PERCENTCHANGE,MENTIONS,FEAR,SADNESS,ANGER,TENTATIVE,ANALYTICAL,CONFIDENT,JOY,TIMESTAMP,NEWSMENTIONS) "
-                    + "VALUES (" + id + "," + rank + "," + price + "," + volume + "," + marketcap
-                    + "," + percentChange + "," + mentions + "," + fear + "," + sadness
+            String sql = "INSERT INTO TONEINFO (ID,FEAR,SADNESS,ANGER,TENTATIVE,ANALYTICAL,CONFIDENT,JOY,TIMESTAMP) "
+                    + "VALUES (" + id + "," + fear + "," + sadness
                     + "," + anger + "," + tentative + "," + analytical + "," + confident
-                    + "," + joy + "," + "(CURRENT_TIMESTAMP)" + "," + newsMentions + ");";
+                    + "," + joy + "," + "(CURRENT_TIMESTAMP)" + ");";
 
             stmt.executeUpdate(sql);
 
@@ -431,21 +580,25 @@ public class DBNew {
     }
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        DBNew test = new DBNew();
+        DBAgain test = new DBAgain();
 
-        JSONArray arr = test.getHour("Bitcoin");
+        JSONArray arr = test.getDaily("Bitcoin");
+
         System.out.println(arr);
 //        test.createCoinTable();
 //        test.createScrapeTable();
+//        test.createToneTable();
 //
 //        GetCoinData coinData = new GetCoinData();
 //
-//        List<Coin> coinList = coinData.coinDataList();
+//        List<String> hi = coinData.getAllCustomers();
+//        List<Coin> list = coinData.coinDataList(hi);
 //
-//        for (Coin coin : coinList) {
-//      //      test.insertNewCoin(coin);
-//         //   test.insertNewScrapeInfo(coin);
-//              test.insertNewScrapeInfoOften(coin);
+//
+//        for (Coin coin : list) {
+//            test.insertNewCoin(coin);
+//            test.insertNewScrapeInfo(coin);
+//            test.insertNewToneInfo(coin);
 //        }
 //
 ////        test.read();
