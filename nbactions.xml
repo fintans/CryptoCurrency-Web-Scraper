@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>run</actionName>
+            <packagings>
+                <packaging>war</packaging>
+                <packaging>ear</packaging>
+                <packaging>ejb</packaging>
+            </packagings>
+            <goals>
+                <goal>jetty:run</goal>
+            </goals>
+        </action>
+    </actions>
+    
+    
+<!--        <groupId>scrape</groupId>
+    <artifactId>mavenproject1Test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>mavenproject1Test</name>-->
